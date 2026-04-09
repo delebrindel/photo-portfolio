@@ -28,3 +28,10 @@ pnpm-debug.log*
 
 # staging photos
 staging/
+
+# test/temp files
+test-photos/
+test-upload.txt
+.tmp-optimize/
+.wrangler/
+NUL

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -16,6 +17,27 @@ const VARIANTS: Variant[] = [
 ];
 
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.tiff', '.webp'];
+
+// --- S3 Client for R2 ---
+function createR2Client(): S3Client {
+  const endpoint = process.env['R2_ENDPOINT'];
+  const accessKeyId = process.env['R2_ACCESS_KEY_ID'];
+  const secretAccessKey = process.env['R2_SECRET_ACCESS_KEY'];
+
+  if (!endpoint || !accessKeyId || !secretAccessKey) {
+    console.error('Missing R2 credentials in .env (R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY)');
+    process.exit(1);
+  }
+
+  return new S3Client({
+    region: 'auto',
+    endpoint,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+}
 
 // --- CLI Args ---
 function parseArgs(): {
@@ -58,24 +80,6 @@ Options:
   };
 }
 
-// --- S3/R2 Client ---
-function createR2Client(): S3Client {
-  const endpoint = process.env['R2_ENDPOINT'];
-  const accessKeyId = process.env['R2_ACCESS_KEY_ID'];
-  const secretAccessKey = process.env['R2_SECRET_ACCESS_KEY'];
-
-  if (!endpoint || !accessKeyId || !secretAccessKey) {
-    console.error('Missing R2 environment variables. See .env.example');
-    process.exit(1);
-  }
-
-  return new S3Client({
-    region: 'auto',
-    endpoint,
-    credentials: { accessKeyId, secretAccessKey },
-  });
-}
-
 // --- Processing ---
 async function processImage(
   inputPath: string,
@@ -93,15 +97,14 @@ async function uploadToR2(
   client: S3Client,
   bucket: string,
   key: string,
-  body: Buffer,
+  buffer: Buffer,
 ): Promise<void> {
   await client.send(
     new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      Body: body,
+      Body: buffer,
       ContentType: 'image/webp',
-      CacheControl: 'public, max-age=31536000, immutable',
     }),
   );
 }
@@ -130,8 +133,8 @@ async function main() {
   console.log(`Target: ${collection}/${gallery}`);
   console.log(`Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}\n`);
 
-  const bucket = process.env['R2_BUCKET_NAME'] || 'photo-portfolio-assets';
-  const client = dryRun ? null : createR2Client();
+  const bucket = process.env['R2_BUCKET_NAME'] || 'photos';
+  const client = dryRun ? (null as unknown as S3Client) : createR2Client();
 
   const processedFiles: string[] = [];
 
@@ -149,7 +152,9 @@ async function main() {
       } else {
         const buffer = await processImage(inputPath, variant);
         const sizeMB = (buffer.length / 1024 / 1024).toFixed(2);
-        await uploadToR2(client!, bucket, r2Key, buffer);
+
+        await uploadToR2(client, bucket, r2Key, buffer);
+
         console.log(`  ✓ ${variant.name} (${variant.width}px) → ${r2Key} [${sizeMB} MB]`);
       }
     }

@@ -2,7 +2,7 @@ name: "Cristobal Torres"
 tagline: "Capturing the spaces between reality and dreams"
 description: "Explore the professional portfolio of Cristóbal Torres, featuring photography work focused on dance and scenic arts."
 siteUrl: "https://photo.ctorres.lat"
-photosBaseUrl: "https://photos.ctorres.lat"
+photosBaseUrl: "https://pub-497594c4ce3944cb8f5754a94efb6410.r2.dev"
 
 about:
   bio: |
@@ -30,4 +30,4 @@ social:
 featuredPhoto:
   collection: "dance"
   gallery: "ballet-noir"
-  file: "stage-light-01.jpg"
+  file: "2025_Ignis_001.jpg"
