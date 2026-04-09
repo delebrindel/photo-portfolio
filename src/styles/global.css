@@ -15,8 +15,8 @@
   --color-border: #222222;
   --color-overlay: rgba(0, 0, 0, 0.94);
 
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Montserrat', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Bebas Neue', Impact, sans-serif;
 
   --nav-height: 64px;
   --max-width: 1440px;

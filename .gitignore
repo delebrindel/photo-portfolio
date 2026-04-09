@@ -30,8 +30,7 @@ pnpm-debug.log*
 staging/
 
 # test/temp files
-test-photos/
+upload-photos/
 test-upload.txt
 .tmp-optimize/
 .wrangler/
-NUL
