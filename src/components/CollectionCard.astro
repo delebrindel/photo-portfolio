@@ -1,0 +1,42 @@
+---
+import type { Collection } from '../lib/types';
+import { getPhotoUrl } from '../lib/photos';
+
+export interface Props {
+  collection: Collection;
+  photosBaseUrl: string;
+}
+
+const { collection, photosBaseUrl } = Astro.props;
+
+// Cover path is relative to collection: "gallery-slug/file.jpg"
+const coverParts = collection.cover.split('/');
+const coverGallery = coverParts.length > 1 ? coverParts[0] : collection.galleries[0]?.slug ?? '';
+const coverFile = coverParts.length > 1 ? coverParts[1] : coverParts[0];
+
+const coverUrl = getPhotoUrl(photosBaseUrl, collection.slug, coverGallery, coverFile, 'medium');
+const galleryCount = collection.galleries.length;
+---
+
+<a href={`/${collection.slug}/`} class="card collection-card">
+  <div class="card-image">
+    <img
+      src={coverUrl}
+      alt={collection.title}
+      loading="lazy"
+      onerror="this.style.display='none'"
+    />
+  </div>
+  <div class="card-overlay">
+    <h3 class="card-title">{collection.title}</h3>
+    <span class="card-meta">
+      {galleryCount} {galleryCount === 1 ? 'gallery' : 'galleries'}
+    </span>
+  </div>
+</a>
+
+<style>
+  .collection-card {
+    display: block;
+  }
+</style>

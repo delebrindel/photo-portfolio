@@ -1,0 +1,203 @@
+---
+import type { Collection } from '../lib/types';
+
+export interface Props {
+  collections: Collection[];
+  currentPath?: string;
+}
+
+const { collections, currentPath = '' } = Astro.props;
+---
+
+<nav class="nav" id="main-nav">
+  <div class="container nav-inner">
+    <a href="/" class="nav-logo">Cristobal Torres</a>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span class="hamburger"></span>
+    </button>
+
+    <ul class="nav-links" id="nav-links">
+      {collections.map((col) => (
+        <li>
+          <a
+            href={`/${col.slug}/`}
+            class:list={[{ active: currentPath.startsWith(`/${col.slug}`) }]}
+          >
+            {col.title}
+          </a>
+        </li>
+      ))}
+      <li>
+        <a
+          href="/about/"
+          class:list={[{ active: currentPath === '/about' || currentPath === '/about/' }]}
+        >
+          About
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<script>
+  const toggle = document.getElementById('nav-toggle');
+  const links = document.getElementById('nav-links');
+  const nav = document.getElementById('main-nav');
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = links?.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  // Backdrop blur on scroll
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    if (scrollY > 50) {
+      nav?.classList.add('scrolled');
+    } else {
+      nav?.classList.remove('scrolled');
+    }
+    lastScroll = scrollY;
+  }, { passive: true });
+</script>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    height: var(--nav-height);
+    display: flex;
+    align-items: center;
+    background: transparent;
+    transition: background var(--transition-normal), backdrop-filter var(--transition-normal);
+  }
+
+  .nav.scrolled {
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .nav-logo {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: var(--color-text);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .nav-logo:hover {
+    color: var(--color-accent);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .nav-links a {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-weight: 400;
+    position: relative;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--color-accent);
+    transition: width var(--transition-normal);
+  }
+
+  .nav-links a:hover::after,
+  .nav-links a.active::after {
+    width: 100%;
+  }
+
+  .nav-links a.active {
+    color: var(--color-text);
+  }
+
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+
+  .hamburger {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text);
+    position: relative;
+    transition: background var(--transition-fast);
+  }
+
+  .hamburger::before,
+  .hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text);
+    transition: transform var(--transition-fast);
+  }
+
+  .hamburger::before {
+    top: -7px;
+  }
+
+  .hamburger::after {
+    top: 7px;
+  }
+
+  @media (max-width: 639px) {
+    .nav-toggle {
+      display: block;
+    }
+
+    .nav-links {
+      position: fixed;
+      top: var(--nav-height);
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 2rem;
+      gap: 1.5rem;
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform var(--transition-normal), opacity var(--transition-normal);
+    }
+
+    .nav-links.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+  }
+</style>

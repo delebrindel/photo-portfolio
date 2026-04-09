@@ -1,0 +1,25 @@
+{
+  "name": "photo-portfolio",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "photos:optimize": "tsx scripts/optimize-photos.ts"
+  },
+  "dependencies": {
+    "astro": "^6.1.5",
+    "yaml": "^2.8.3"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.1027.0",
+    "@types/node": "^25.5.2",
+    "sharp": "^0.34.5",
+    "tsx": "^4.21.0"
+  }
+}

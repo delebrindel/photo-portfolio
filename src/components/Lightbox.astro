@@ -1,0 +1,310 @@
+---
+import type { Photo } from '../lib/types';
+import { getPhotoUrl } from '../lib/photos';
+
+export interface Props {
+  photos: Photo[];
+  collectionSlug: string;
+  gallerySlug: string;
+  photosBaseUrl: string;
+}
+
+const { photos, collectionSlug, gallerySlug, photosBaseUrl } = Astro.props;
+
+// Build photo data for the client-side lightbox script
+const photoData = photos.map((photo) => ({
+  slug: photo.file.replace(/\.[^.]+$/, ''),
+  medium: getPhotoUrl(photosBaseUrl, collectionSlug, gallerySlug, photo.file, 'medium'),
+  full: getPhotoUrl(photosBaseUrl, collectionSlug, gallerySlug, photo.file, 'full'),
+  caption: photo.caption || '',
+}));
+---
+
+<!-- Lightbox overlay (hidden by default) -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+  <button class="lightbox-prev" id="lightbox-prev" aria-label="Previous photo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </button>
+  <button class="lightbox-next" id="lightbox-next" aria-label="Next photo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </button>
+
+  <div class="lightbox-content">
+    <img class="lightbox-image" id="lightbox-image" src="" alt="" />
+    <p class="lightbox-caption" id="lightbox-caption"></p>
+  </div>
+
+  <div class="lightbox-counter" id="lightbox-counter"></div>
+</div>
+
+<!-- Inject photo data for client-side script -->
+<script define:vars={{ photoData }}>
+  window.__LIGHTBOX_PHOTOS__ = photoData;
+</script>
+
+<script>
+  interface LightboxPhoto {
+    slug: string;
+    medium: string;
+    full: string;
+    caption: string;
+  }
+
+  const photos: LightboxPhoto[] = (window as any).__LIGHTBOX_PHOTOS__ || [];
+  const lightbox = document.getElementById('lightbox')!;
+  const image = document.getElementById('lightbox-image') as HTMLImageElement;
+  const caption = document.getElementById('lightbox-caption')!;
+  const counter = document.getElementById('lightbox-counter')!;
+  const closeBtn = document.getElementById('lightbox-close')!;
+  const prevBtn = document.getElementById('lightbox-prev')!;
+  const nextBtn = document.getElementById('lightbox-next')!;
+
+  let currentIndex = -1;
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  function openLightbox(index: number) {
+    if (index < 0 || index >= photos.length) return;
+    currentIndex = index;
+    const photo = photos[index];
+
+    // Load medium first, then upgrade to full
+    image.src = photo.medium;
+    image.alt = photo.caption || `Photo ${index + 1}`;
+
+    const fullImg = new Image();
+    fullImg.onload = () => {
+      if (currentIndex === index) {
+        image.src = photo.full;
+      }
+    };
+    fullImg.src = photo.full;
+
+    caption.textContent = photo.caption;
+    caption.style.display = photo.caption ? 'block' : 'none';
+    counter.textContent = `${index + 1} / ${photos.length}`;
+
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Update URL hash
+    history.replaceState(null, '', `#photo=${photo.slug}`);
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+    currentIndex = -1;
+
+    // Remove hash
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  function showPrev() {
+    if (currentIndex > 0) {
+      openLightbox(currentIndex - 1);
+    }
+  }
+
+  function showNext() {
+    if (currentIndex < photos.length - 1) {
+      openLightbox(currentIndex + 1);
+    }
+  }
+
+  // Click handlers on masonry items
+  document.querySelectorAll('.masonry-item').forEach((item) => {
+    item.addEventListener('click', () => {
+      const index = parseInt(item.getAttribute('data-index') || '0', 10);
+      openLightbox(index);
+    });
+  });
+
+  // Button handlers
+  closeBtn.addEventListener('click', closeLightbox);
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
+
+  // Click on backdrop closes
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox || (e.target as Element).closest('.lightbox-content') === null) {
+      // Only close if clicking outside the image area
+      const content = lightbox.querySelector('.lightbox-content');
+      if (content && !content.contains(e.target as Node)) {
+        closeLightbox();
+      }
+    }
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (currentIndex === -1) return;
+    switch (e.key) {
+      case 'Escape':
+        closeLightbox();
+        break;
+      case 'ArrowLeft':
+        showPrev();
+        break;
+      case 'ArrowRight':
+        showNext();
+        break;
+    }
+  });
+
+  // Touch/swipe support
+  lightbox.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  lightbox.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        showNext();
+      } else {
+        showPrev();
+      }
+    }
+  }, { passive: true });
+
+  // Check URL hash on load for shareable links
+  function checkHash() {
+    const hash = window.location.hash;
+    if (hash.startsWith('#photo=')) {
+      const slug = hash.replace('#photo=', '');
+      const index = photos.findIndex((p) => p.slug === slug);
+      if (index !== -1) {
+        openLightbox(index);
+      }
+    }
+  }
+
+  checkHash();
+  window.addEventListener('hashchange', checkHash);
+</script>
+
+<style>
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: var(--color-overlay);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-normal);
+  }
+
+  .lightbox.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .lightbox-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 90vw;
+    max-height: 85vh;
+  }
+
+  .lightbox-image {
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 2px;
+    transition: opacity var(--transition-normal);
+  }
+
+  .lightbox-caption {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+    font-style: italic;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--color-text);
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 201;
+    opacity: 0.7;
+    transition: opacity var(--transition-fast);
+    line-height: 1;
+  }
+
+  .lightbox-close:hover {
+    opacity: 1;
+  }
+
+  .lightbox-prev,
+  .lightbox-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 1rem 0.75rem;
+    border-radius: 4px;
+    opacity: 0.6;
+    transition: opacity var(--transition-fast), background var(--transition-fast);
+    z-index: 201;
+  }
+
+  .lightbox-prev:hover,
+  .lightbox-next:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .lightbox-prev {
+    left: 1rem;
+  }
+
+  .lightbox-next {
+    right: 1rem;
+  }
+
+  .lightbox-counter {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 639px) {
+    .lightbox-prev,
+    .lightbox-next {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .lightbox-prev {
+      left: 0.5rem;
+    }
+
+    .lightbox-next {
+      right: 0.5rem;
+    }
+  }
+</style>

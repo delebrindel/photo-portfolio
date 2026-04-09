@@ -1,0 +1,33 @@
+---
+import SEO from '../components/SEO.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { getSiteConfig, getCollections } from '../lib/content';
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title, description, ogImage } = Astro.props;
+const site = getSiteConfig();
+const collections = getCollections();
+---
+
+<!doctype html>
+<html lang="en">
+  <SEO
+    title={title}
+    description={description || site.description}
+    ogImage={ogImage}
+  />
+  <body>
+    <Nav collections={collections} currentPath={Astro.url.pathname} />
+    <main>
+      <slot />
+    </main>
+    <Footer social={site.social} />
+  </body>
+</html>

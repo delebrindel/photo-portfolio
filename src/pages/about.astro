@@ -1,0 +1,92 @@
+---
+import Base from '../layouts/Base.astro';
+import { getSiteConfig } from '../lib/content';
+
+const site = getSiteConfig();
+const bioLines = site.about.bio.split('\n\n');
+---
+
+<Base title="About" description={`About ${site.name} — photographer based in Hermosillo, Mexico.`}>
+  <div class="page-header">
+    <div class="container">
+      <h2>About</h2>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container about-content">
+      <div class="about-bio">
+        {bioLines.map((paragraph) => (
+          <p>{paragraph.trim()}</p>
+        ))}
+      </div>
+
+      <div class="about-contact">
+        <h3>Get in Touch</h3>
+        <p>
+          <a href={`mailto:${site.about.contact}`}>{site.about.contact}</a>
+        </p>
+
+        <div class="about-social">
+          {site.social.map((link) => (
+            <a href={link.url} target="_blank" rel="noopener noreferrer">
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about-content {
+    max-width: 700px;
+  }
+
+  .about-bio {
+    margin-bottom: 3rem;
+  }
+
+  .about-bio p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+  }
+
+  .about-contact h3 {
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+  }
+
+  .about-contact > p {
+    margin-bottom: 1.5rem;
+  }
+
+  .about-contact a {
+    color: var(--color-accent);
+  }
+
+  .about-contact a:hover {
+    text-decoration: underline;
+  }
+
+  .about-social {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .about-social a {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast);
+  }
+
+  .about-social a:hover {
+    color: var(--color-accent);
+  }
+</style>

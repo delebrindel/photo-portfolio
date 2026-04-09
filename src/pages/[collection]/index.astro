@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import GalleryCard from '../../components/GalleryCard.astro';
+import { getCollections, getCollection, getSiteConfig } from '../../lib/content';
+import { getPhotoUrl } from '../../lib/photos';
+
+export function getStaticPaths() {
+  const collections = getCollections();
+  return collections.map((col) => ({
+    params: { collection: col.slug },
+  }));
+}
+
+const { collection: collectionSlug } = Astro.params;
+const col = getCollection(collectionSlug!);
+const site = getSiteConfig();
+
+// Cover image for OG
+const coverParts = col.cover.split('/');
+const coverGallery = coverParts.length > 1 ? coverParts[0] : col.galleries[0]?.slug ?? '';
+const coverFile = coverParts.length > 1 ? coverParts[1] : coverParts[0];
+const ogImage = getPhotoUrl(site.photosBaseUrl, col.slug, coverGallery, coverFile, 'medium');
+---
+
+<Base
+  title={`${col.title} | Cristobal Torres`}
+  description={col.description}
+  ogImage={ogImage}
+>
+  <div class="page-header">
+    <div class="container">
+      <h2>{col.title}</h2>
+      <p>{col.description}</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid-3">
+        {col.galleries.map((gallery) => (
+          <GalleryCard gallery={gallery} photosBaseUrl={site.photosBaseUrl} />
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

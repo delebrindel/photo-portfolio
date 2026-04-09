@@ -1,0 +1,11 @@
+title: "Landscapes"
+slug: "landscapes"
+description: "Wide open silence"
+cover: "horizon-01.jpg"
+order: 1
+photos:
+  - file: "horizon-01.jpg"
+    caption: "Desert dawn"
+  - file: "canyon-02.jpg"
+  - file: "dusk-03.jpg"
+    caption: "Last light"

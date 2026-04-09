@@ -1,0 +1,33 @@
+name: "Cristobal Torres"
+tagline: "Capturing the spaces between reality and dreams"
+description: "Explore the professional portfolio of Cristóbal Torres, featuring photography work focused on dance and scenic arts."
+siteUrl: "https://photo.ctorres.lat"
+photosBaseUrl: "https://photos.ctorres.lat"
+
+about:
+  bio: |
+    I see photography as a way of translating emotion into light, shadow, and color.
+    My work moves between reality and imagination — sometimes raw and natural,
+    other times surreal and atmospheric. Each image is a fragment of a story,
+    shaped by mood, silence, and the spaces in between.
+
+    I'm drawn to contrasts: vibrant stage lights, quiet portraits, and darker
+    tones that hint at mystery. For me, the camera is less about documenting
+    and more about revealing the unseen.
+  contact: "cristobal@ctorres.lat"
+
+social:
+  - platform: "instagram"
+    url: "https://www.instagram.com/ctmelgoza/"
+    label: "Instagram"
+  - platform: "x"
+    url: "https://x.com/Delebrindel"
+    label: "X"
+  - platform: "facebook"
+    url: "https://www.facebook.com/Delebrindel"
+    label: "Facebook"
+
+featuredPhoto:
+  collection: "dance"
+  gallery: "ballet-noir"
+  file: "stage-light-01.jpg"

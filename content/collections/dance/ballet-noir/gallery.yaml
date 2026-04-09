@@ -1,0 +1,12 @@
+title: "Ballet Noir"
+slug: "ballet-noir"
+description: "Dark stage, bright movement"
+cover: "stage-light-01.jpg"
+order: 1
+photos:
+  - file: "stage-light-01.jpg"
+    caption: "Opening night rehearsal"
+  - file: "dancer-silhouette.jpg"
+    caption: "Silhouette in motion"
+  - file: "curtain-call.jpg"
+    caption: "Final bow"

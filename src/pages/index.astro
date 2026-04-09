@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import CollectionCard from '../components/CollectionCard.astro';
+import { getSiteConfig, getCollections } from '../lib/content';
+
+const site = getSiteConfig();
+const collections = getCollections();
+---
+
+<Base>
+  <Hero
+    featuredPhoto={site.featuredPhoto}
+    name={site.name}
+    tagline={site.tagline}
+    photosBaseUrl={site.photosBaseUrl}
+  />
+
+  <section class="section">
+    <div class="container">
+      <h2 class="collections-heading">Collections</h2>
+      <div class="grid-2 collections-grid">
+        {collections.map((col) => (
+          <CollectionCard collection={col} photosBaseUrl={site.photosBaseUrl} />
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .collections-heading {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .collections-grid {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+</style>

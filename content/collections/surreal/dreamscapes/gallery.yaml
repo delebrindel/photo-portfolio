@@ -1,0 +1,11 @@
+title: "Dreamscapes"
+slug: "dreamscapes"
+description: "Visions between sleep and waking"
+cover: "dream-01.jpg"
+order: 1
+photos:
+  - file: "dream-01.jpg"
+    caption: "Floating"
+  - file: "mirror-02.jpg"
+  - file: "fog-03.jpg"
+    caption: "Vanishing point"

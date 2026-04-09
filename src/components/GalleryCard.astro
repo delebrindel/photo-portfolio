@@ -1,0 +1,43 @@
+---
+import type { Gallery } from '../lib/types';
+import { getPhotoUrl } from '../lib/photos';
+
+export interface Props {
+  gallery: Gallery;
+  photosBaseUrl: string;
+}
+
+const { gallery, photosBaseUrl } = Astro.props;
+
+const coverUrl = getPhotoUrl(
+  photosBaseUrl,
+  gallery.collectionSlug,
+  gallery.slug,
+  gallery.cover,
+  'medium',
+);
+const photoCount = gallery.photos.length;
+---
+
+<a href={`/${gallery.collectionSlug}/${gallery.slug}/`} class="card gallery-card">
+  <div class="card-image">
+    <img
+      src={coverUrl}
+      alt={gallery.title}
+      loading="lazy"
+      onerror="this.style.display='none'"
+    />
+  </div>
+  <div class="card-overlay">
+    <h3 class="card-title">{gallery.title}</h3>
+    <span class="card-meta">
+      {photoCount} {photoCount === 1 ? 'photo' : 'photos'}
+    </span>
+  </div>
+</a>
+
+<style>
+  .gallery-card {
+    display: block;
+  }
+</style>

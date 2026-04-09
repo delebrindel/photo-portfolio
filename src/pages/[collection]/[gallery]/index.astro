@@ -1,0 +1,74 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumb from '../../../components/Breadcrumb.astro';
+import MasonryGrid from '../../../components/MasonryGrid.astro';
+import Lightbox from '../../../components/Lightbox.astro';
+import { getCollections, getCollection, getGallery, getSiteConfig } from '../../../lib/content';
+import { getPhotoUrl } from '../../../lib/photos';
+
+export function getStaticPaths() {
+  const collections = getCollections();
+  const paths: { params: { collection: string; gallery: string } }[] = [];
+
+  for (const col of collections) {
+    for (const gal of col.galleries) {
+      paths.push({
+        params: { collection: col.slug, gallery: gal.slug },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { collection: collectionSlug, gallery: gallerySlug } = Astro.params;
+const col = getCollection(collectionSlug!);
+const gallery = getGallery(collectionSlug!, gallerySlug!);
+const site = getSiteConfig();
+
+const ogImage = getPhotoUrl(
+  site.photosBaseUrl,
+  gallery.collectionSlug,
+  gallery.slug,
+  gallery.cover,
+  'medium',
+);
+
+const breadcrumbs = [
+  { label: 'Home', href: '/' },
+  { label: col.title, href: `/${col.slug}/` },
+  { label: gallery.title },
+];
+---
+
+<Base
+  title={`${gallery.title} | ${col.title}`}
+  description={gallery.description}
+  ogImage={ogImage}
+>
+  <div class="page-header">
+    <div class="container">
+      <Breadcrumb items={breadcrumbs} />
+      <h2>{gallery.title}</h2>
+      <p>{gallery.description}</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <MasonryGrid
+        photos={gallery.photos}
+        collectionSlug={gallery.collectionSlug}
+        gallerySlug={gallery.slug}
+        photosBaseUrl={site.photosBaseUrl}
+      />
+    </div>
+  </section>
+
+  <Lightbox
+    photos={gallery.photos}
+    collectionSlug={gallery.collectionSlug}
+    gallerySlug={gallery.slug}
+    photosBaseUrl={site.photosBaseUrl}
+  />
+</Base>

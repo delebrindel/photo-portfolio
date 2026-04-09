@@ -1,0 +1,60 @@
+---
+import type { Photo } from '../lib/types';
+import { getPhotoUrl, getSrcSet, getPlaceholder } from '../lib/photos';
+
+export interface Props {
+  photos: Photo[];
+  collectionSlug: string;
+  gallerySlug: string;
+  photosBaseUrl: string;
+}
+
+const { photos, collectionSlug, gallerySlug, photosBaseUrl } = Astro.props;
+const placeholder = getPlaceholder();
+---
+
+<div class="masonry" id="masonry-grid">
+  {photos.map((photo, index) => {
+    const thumbUrl = getPhotoUrl(photosBaseUrl, collectionSlug, gallerySlug, photo.file, 'thumb');
+    const srcset = getSrcSet(photosBaseUrl, collectionSlug, gallerySlug, photo.file);
+    const slug = photo.file.replace(/\.[^.]+$/, '');
+
+    return (
+      <div
+        class="masonry-item"
+        data-index={index}
+        data-slug={slug}
+        data-caption={photo.caption || ''}
+      >
+        <img
+          src={thumbUrl}
+          srcset={srcset}
+          sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, 25vw"
+          alt={photo.caption || `Photo ${index + 1}`}
+          loading={index < 8 ? 'eager' : 'lazy'}
+          style={`background-image: url(${placeholder}); background-size: cover;`}
+          onerror="this.style.display='none'"
+        />
+      </div>
+    );
+  })}
+</div>
+
+<script>
+  // Intersection Observer for fade-in effect
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1, rootMargin: '50px' },
+  );
+
+  document.querySelectorAll('.masonry-item').forEach((item) => {
+    observer.observe(item);
+  });
+</script>
